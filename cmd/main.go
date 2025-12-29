@@ -10,14 +10,29 @@ import (
 func main() {
 	app := engine.New()
 
+	// Middleware 1: Logger
 	app.Use(func(ctx *engine.Context, next engine.HandlerFunc) {
-		log.Println("Before handler")
+		log.Println("→ Incoming request:", ctx.Request.Method, ctx.Request.URL.Path)
 		next(ctx)
-		log.Println("After handler")
+		log.Println("← Request finished")
 	})
 
+	// Middleware 2: Auth fake
+	app.Use(func(ctx *engine.Context, next engine.HandlerFunc) {
+		token := ctx.Request.Header.Get("Authorization")
+
+		if token == "" {
+			ctx.Writer.WriteHeader(401)
+			ctx.Writer.Write([]byte("Unauthorized"))
+			return 
+		}
+
+		next(ctx)
+	})
+
+	// Handler final
 	app.Handle(func(ctx *engine.Context) {
-		ctx.Writer.Write([]byte("Hello from engine"))
+		ctx.Writer.Write([]byte("Welcome, authenticated user"))
 	})
 
 	log.Println("Listening on :8080")
