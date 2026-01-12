@@ -30,11 +30,11 @@ func main() {
 		next(ctx)
 	})
 
-	app.HandleRoute("GET", "/", func(ctx *engine.Context) {
+	app.GET("/", func (ctx *engine.Context) {
 		ctx.Writer.Write([]byte("Home"))
 	})
 
-	app.HandleRoute("GET", "/health", func(ctx *engine.Context) {
+	app.GET("/health", func(ctx *engine.Context) {
 		ctx.Writer.Write([]byte("OK"))
 	})	
 	

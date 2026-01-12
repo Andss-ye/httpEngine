@@ -44,6 +44,22 @@ func (e *Engine) HandleRoute(method, path string, h HandlerFunc) {
 	e.routes[key] = h
 }
 
+func (e *Engine) GET(path string, h HandlerFunc) {
+	e.HandleRoute("GET", path, h)
+}
+
+func (e *Engine) POST(path string, h HandlerFunc) {
+	e.HandleRoute("POST", path, h)
+}
+
+func (e *Engine) PUT(path string, h HandlerFunc) {
+	e.HandleRoute("PUT", path, h)
+}
+
+func (e *Engine) DELETE(path string, h HandlerFunc) {
+	e.HandleRoute("DELETE", path, h)
+}
+
 // Implementa http.Handler
 func (e *Engine) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := &Context{
