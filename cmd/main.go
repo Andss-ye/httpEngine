@@ -21,7 +21,7 @@ func main() {
 	app.Use(func(ctx *engine.Context, next engine.HandlerFunc) {
 		token := ctx.Request.Header.Get("Authorization")
 
-		if token == "" {
+		if token == "a" {
 			ctx.Writer.WriteHeader(401)
 			ctx.Writer.Write([]byte("Unauthorized"))
 			return 
@@ -30,6 +30,14 @@ func main() {
 		next(ctx)
 	})
 
+	app.HandleRoute("GET", "/", func(ctx *engine.Context) {
+		ctx.Writer.Write([]byte("Home"))
+	})
+
+	app.HandleRoute("GET", "/health", func(ctx *engine.Context) {
+		ctx.Writer.Write([]byte("OK"))
+	})	
+	
 	// Handler final
 	app.Handle(func(ctx *engine.Context) {
 		ctx.Writer.Write([]byte("Welcome, authenticated user"))

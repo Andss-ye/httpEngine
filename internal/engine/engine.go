@@ -5,11 +5,14 @@ import "net/http"
 type Engine struct {
 	middlewares []MiddlewareFunc
 	handler     HandlerFunc
+	
+	routes map[string]HandlerFunc
 }
 
 func New() *Engine {
 	return &Engine{
 		middlewares: make([]MiddlewareFunc, 0),
+		routes:      make(map[string]HandlerFunc),
 	}
 }
 
@@ -21,8 +24,8 @@ func (e *Engine) Handle(h HandlerFunc) {
 	e.handler = h
 }
 
-func (e *Engine) buildChain() HandlerFunc {
-	h := e.handler
+func (e *Engine) buildChain(final HandlerFunc) HandlerFunc {
+	h := final
 
 	for i := len(e.middlewares) - 1; i >= 0; i-- {
 		m := e.middlewares[i]
@@ -36,19 +39,27 @@ func (e *Engine) buildChain() HandlerFunc {
 	return h
 }
 
+func (e *Engine) HandleRoute(method, path string, h HandlerFunc) {
+	key := method + ":" + path
+	e.routes[key] = h
+}
+
 // Implementa http.Handler
 func (e *Engine) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	if e.handler == nil {
-		w.WriteHeader(http.StatusNotFound)
-		w.Write([]byte("not handler implemented"))
-		return
-	}
-
 	ctx := &Context{
 		Writer: w,
 		Request: r,
 	}
 	
-	chain := e.buildChain()
+	key := r.Method + ":" + r.URL.Path
+	handler, ok := e.routes[key]
+	
+	if !ok {
+		w.WriteHeader(http.StatusNotFound)
+		w.Write([]byte("404 not found"))
+		return
+	}
+	
+	chain := e.buildChain(handler)
 	chain(ctx)
 }
